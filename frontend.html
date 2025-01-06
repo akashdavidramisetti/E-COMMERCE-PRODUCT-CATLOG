@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Product Catalog</title>
+    <link rel="stylesheet" href="style.css"> <!-- Add this file for styling -->
+</head>
+<body>
+    <h1>E-Commerce Product Catalog</h1>
+
+    <!-- Search Form -->
+    <form onsubmit="event.preventDefault(); searchCategory();">
+        <label for="category">Search by Category:</label>
+        <input type="text" id="category" name="category" placeholder="Enter Category Name">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Product Table -->
+    <table border="1" id="product-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </thead>
+        <tbody id="product-table-body">
+            <!-- Rows will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Function to fetch all products
+        function fetchProducts() {
+            fetch('http://127.0.0.1:8000/products') // Backend endpoint
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    populateTable(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching products:", error);
+                });
+        }
+
+        // Function to search products by category
+        function searchCategory() {
+            const category = document.getElementById('category').value;
+            fetch(`http://127.0.0.1:8000/products/search/${category}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    populateTable(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching products by category:", error);
+                });
+        }
+
+        // Function to populate the table with product data
+        function populateTable(data) {
+            const tableBody = document.getElementById('product-table-body');
+            tableBody.innerHTML = ""; // Clear any existing rows
+
+            if (data.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='4'>No products found</td></tr>";
+                return;
+            }
+
+            data.forEach(product => {
+                const row = `
+                    <tr>
+                        <td>${product.ProductName}</td>
+                        <td>${product.Price}</td>
+                        <td>${product.CategoryName}</td>
+                        <td>${product.StockQuantity}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Fetch all products when the page loads
+        window.onload = fetchProducts;
+    </script>
+</body>
+</html>
